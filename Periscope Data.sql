@@ -29,10 +29,17 @@ Order by created_at desc
 LIMIT 10 
 
 # Get yesterdays value one up 
-SELECT date(created_at) dt, count(1) ct, lag(count (1)) Over (order by 1 desc) 
+SELECT date(created_at) dt, count(1) ct, lag(count (1)) Over (order by 1 desc) ct_yesterday
 FROM events
 Group by created_at
 Order by created_at desc
 LIMIT 10 
 
 # we really want the change between today and yesterday. To do that, we calculate (ct - ct_yesterday) / ct_yesterday
+Select dt, ct,ct_yesterday, round(100*(ct - ct_yesterday) / ct_yesterday, 2) || % as daily_delta
+From 
+(SELECT date(created_at) dt, count(1) ct, lag(count (1)) Over (order by 1 desc) as ct_yesterday
+FROM events
+Group by created_at
+Order by created_at desc
+LIMIT 10 ) FT
