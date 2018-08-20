@@ -43,3 +43,18 @@ FROM events
 Group by created_at
 Order by created_at desc
 LIMIT 10 ) FT
+
+
+## Selecting Only One Row Per Group
+# start with table
+SELECT date(created_at) as dt, count(1) dt, platform
+FROM gameplays
+group by 1
+#
+SELECT  dt, ct, platform,
+(
+SELECT date(created_at) as dt, count(1) dt, platform, row_number() Over (Partition by dt Order by ct Desc) as row_num
+FROM gameplays
+group by 1
+)
+WHERE row_num =1 
