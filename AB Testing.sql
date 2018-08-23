@@ -26,4 +26,33 @@ FROM ab_test_entrant JOIN ab_test_entrant on ab_test_entrant.user_id = ab_test_e
 Group by 1
 '3. Check for data populating in each bucket'
 #Finally, do I have the expected number of versions, collecting conversions in each bucket?
+################################# A/B Testing ############################
+#Calculate user conversion rate in each bucket
+SELECT ab_test_version, COUNT(ab1.user_id) ::float /COUNT(ab2.user_id) as conversion_rate
+FROM ab_test_entrant ab1 JOIN ab_test_entrant ab2 on ab_test_entrant.user_id = ab_test_entrant.user_id 
+Group by 1
 
+
+#Confidence Intervals
+with
+ ab_test_conversions as (
+   select
+     ab_test_version
+     , count(ab_test_entrants.user_id) as ab_test_entrants
+     , count(ab_test_conversions.user_id) as ab_test_conversions
+   from
+     [ab_test_entrants]
+     left join [ab_test_conversions] using (user_id)
+   group by
+     1
+ )
+ , ab_test_conversion_rates as (
+   select
+     ab_test_version
+     , ab_test_entrants
+     , ab_test_conversions
+     , (ab_test_conversions + 1.92) / (ab_test_entrants + 3.84 )::float as conversion_rate
+   from
+     ab_test_conversions
+ ), 
+ conversion_rate_standard_error as (
