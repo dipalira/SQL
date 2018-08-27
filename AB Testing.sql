@@ -44,7 +44,7 @@ with
      [ab_test_entrants]
      left join [ab_test_conversions] using (user_id)
    group by
-     1
+     1a
  )
  , ab_test_conversion_rates as (
    select

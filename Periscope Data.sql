@@ -50,7 +50,7 @@ LIMIT 10 ) FT
 SELECT date(created_at) as dt, count(1) dt, platform
 FROM gameplays
 group by 1
-#
+# POSTGRES
 SELECT  dt, ct, platform,
 (
 SELECT date(created_at) as dt, count(1) dt, platform, row_number() Over (Partition by dt Order by ct Desc) as row_num
@@ -58,3 +58,33 @@ FROM gameplays
 group by 1
 )
 WHERE row_num =1 
+#MySQL
+SELECT dt,substring_index(group_concat(platform,Order by ct desc),',',1), ct
+(SELECT date(created_at) as dt, count(1) dt, platform
+FROM gameplays
+group by 1) filtered
+group by 1
+
+## Using CTEs and Unions to Compute Running Totals
+# Intial Query "with"
+WITH individual_performance AS (
+		SELECT DATE_TRUNC('MONTH', plan_start) AS m,
+		users.name salesperson,
+    	sum(purchase_price) revenue
+    	FROM   payment_plans join users 
+    	on users.id = payment_plans.sales_owner_id
+  		group by 1, 2
+	)
+SELECT 
+m, 
+salesperson, 
+revenue 
+from individual_performance
+union all 
+select 
+  m, 
+  'Total', 
+  sum(revenue) 
+from individual_performance 
+group by 1
+##
